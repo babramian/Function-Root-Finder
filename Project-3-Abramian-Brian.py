@@ -38,6 +38,10 @@ class Equation():
                 A = C
         
         return C
+    
+
+    def Newton_Raphson():
+        x = None
         
 
 
@@ -47,15 +51,15 @@ if __name__ == "__main__":
     # True Root of fb = 126.632 (According to Desmos)
     fb = Equation((lambda x : x + 10 - x * np.cosh(50/x)))
 
-    print(fa.solve(0))
-    print(fa.solve(1))
-    print(fa.solve(.365))
-    bis_a1 = fa.bisection(0, 1, .001)
-    bis_a2 = fa.bisection(1, 3, .001)
-    bis_a3 = fa.bisection(3, 4, .001)
+    bis_a1 = fa.bisection(0, 1, .01)
+    bis_a2 = fa.bisection(1, 3, .01)
+    bis_a3 = fa.bisection(3, 4, .01)
+    bis_b = fb.bisection(120, 130, .01)
     print()
     print(f'Bisections of function (a) {round(bis_a1, 3)}, {round(bis_a2, 3)}, {round(bis_a3, 3)}')
     print(f'f(bisections): {round(fa.solve(bis_a1), 3)}, {round(fa.solve(bis_a2), 3)}, {round(fa.solve(bis_a3), 3)}')
+    print(f'Bisections of function (a) {round(bis_b, 3)}')
+    print(f'f({bis_b}): {round(fb.solve(bis_b), 3)}')
 
     
 input()
