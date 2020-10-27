@@ -1,4 +1,5 @@
 import numpy as np
+import plotly.graph_objects as go
 
 class Equation():
 
@@ -119,6 +120,7 @@ class Equation():
             et = abs((true_root - x1)/true_root)
             self.NR_ea.append(float(ea))
             self.NR_et.append(float(et))
+            print(f'Iteration {step},\tx0 = {round(x0, 3)}\tx1 = {round(x1, 3)}\tf(x1) = {round(self.solve(x1), 3)}')
 
             x0 = x1
             step += 1
@@ -137,6 +139,7 @@ class Equation():
 
 
     def secant(self, x0, x1, err=0.01, N=100, true_root=[]):
+        
         step = 1
         ea = err + 1
         x2 = None
@@ -179,6 +182,47 @@ class Equation():
             print("Not Convergent")
         
     
+
+    def mod_secant(self, x0, err=0.01, N=100, delta=0.01, true_root=[]):
+        step = 1
+        ea = err + 1
+        x1 = None
+
+        if true_root == []:
+            true_root = self.get_root(self.true_roots, x0 - self.solve(x0) * (delta * x0)/(self.solve(x0 + delta * x0) - self.solve(x0)))
+
+        while step < N and ea > err:
+            if self.solve(x0 + delta * x0) - self.solve(x0) == 0:
+                print('Cant divide by zero.')
+                break
+
+            x1 = x0 - self.solve(x0) * (delta * x0)/(self.solve(x0 + delta * x0) - self.solve(x0))
+            ea = abs((x1 - x0)/x1)
+            et = abs((true_root - x1)/true_root)
+            self.mod_ea.append(float(ea))
+            self.mod_et.append(float(et))
+            print(f'Iteration {step},\tx0 = {round(x0, 3)}\tx1 = {round(x1, 3)}\tf(x1) = {round(self.solve(x1), 3)}')
+            x0 = x1
+
+            step += 1
+
+        print(f'Iteration {step},\tx0 = {round(x0, 3)}\tx1 = {round(x1, 3)}\tf(x1) = {round(self.solve(x1), 3)}')
+        ea = abs((x1 - x0)/x1)
+        et = abs((true_root - x1)/true_root)
+        self.mod_ea.append(float(ea))
+        self.mod_et.append(float(et))
+        self.mod_num_iter = step
+
+        if step <= N:
+            print()
+            print(f"(Modified Secant) Root is: {x1}")
+            print()
+            return x1
+
+        else:
+            print("Not Convergent")
+
+
 
     def false_position(self, a, b, err=.01, N=100, true_root=[]):
         step = 0
@@ -253,12 +297,13 @@ class Equation():
 
 
     def get_errors(self):
-        return (np.array(self.bisec_ea, dtype=float), np.array(self.NR_ea, dtype=float), 
+        return np.array(
+                [np.array(self.bisec_ea, dtype=float), np.array(self.NR_ea, dtype=float), 
                 np.array(self.secant_ea, dtype=float), np.array(self.FP_ea, dtype=float),
-                np.array(self.mod_ea, dtype=float),
-                np.array(self.bisec_et, dtype=float), np.array(self.NR_et, dtype=float), 
+                np.array(self.mod_ea, dtype=float)]), np.array([np.array(self.bisec_et, dtype=float), np.array(self.NR_et, dtype=float), 
                 np.array(self.secant_et, dtype=float), np.array(self.FP_et, dtype=float),
-                np.array(self.mod_et, dtype=float))
+                np.array(self.mod_et, dtype=float)]
+                )
         
     
 
@@ -271,10 +316,8 @@ class Equation():
                             self.FP_num_iter,
                             self.mod_num_iter], dtype=float)
 
-    
 
-
-if __name__ == "__main__":
+def test_code():
     # True Roots of fa = .365, 1.922, 3.563 (According to Desmos)
     fa = Equation((lambda x : 2 * (x**3) - 11.7 * (x**2) + 17.7 * x - 5), [.365, 1.922, 2.563])
     fa_derivative = lambda x : 6 * (x**2) - 23.4 * x + 17.7
@@ -283,52 +326,100 @@ if __name__ == "__main__":
     fb = Equation((lambda x : x + 10 - x * np.cosh(50/x)), [126.632])
     fb_derivative = lambda x : 1 + (50 * np.sinh(50/x))/x - np.cosh(50/x)
 
-
-    bis_a1 = fa.bisection(0, 1, true_root=.365)
-    NR_a1 = fa.newton_raphson(fa_derivative, -5, true_root=.365)
-    secant_a1 = fa.secant(-10, -5, true_root=.365)
-    FP_a1 = fa.false_position(-2, 1, true_root=.365)
-    bis_ea_a1, NR_ea_a1, secant_ea_a1, FP_ea_a1, mod_ea_a1, bis_et_a1, NR_et_a1, secant_et_a1, FP_et_a1, mod_er_a1 = fa.get_errors()
-    bis_count_a1, NR_count_a1, secant_count_a1, FP_count_a1, mod_count_a1 = fa.get_max_iterations()
+    bis_a1 = fa.bisection(0, 4, true_root=.365)
+    NR_a1 = fa.newton_raphson(fa_derivative, -1, true_root=.365)
+    secant_a1 = fa.secant(0, 4, true_root=.365)
+    FP_a1 = fa.false_position(0, 4, true_root=.365)
+    mod_a1 = fa.mod_secant(-1, true_root=.365)
+    a1_ea, a1_et = fa.get_errors()
+    a1_counts = fa.get_max_iterations()
     fa.reset_values()
 
-    bis_a2 = fa.bisection(1, 3, true_root=1.922)
-    NR_a2 = fa.newton_raphson(fa_derivative, 2.5, true_root=1.922)
-    secant_a2 = fa.secant(.5, 1.5, true_root=1.922)
-    FP_a2 = fa.false_position(1.4, 2.3, true_root=1.922)
-    bis_ea_a2, NR_ea_a2, secant_ea_a2, FP_ea_a2, mod_ea_a2, bis_et_a2, NR_et_a2, secant_et_a2, FP_et_a2, mod_et_a2 = fa.get_errors()
-    bis_count_a2, NR_count_a2, secant_count_a2, FP_count_a2, mod_count_a2 = fa.get_max_iterations()
+    bis_a2 = fa.bisection(0, 4, true_root=1.922)
+    NR_a2 = fa.newton_raphson(fa_derivative, 0, true_root=1.922)
+    secant_a2 = fa.secant(0, 4, true_root=1.922)
+    FP_a2 = fa.false_position(0, 4, true_root=1.922)
+    mod_a2 = fa.mod_secant(-1, true_root=1.922)
+    a2_ea, a2_et = fa.get_errors()
+    a2_counts = fa.get_max_iterations()
     fa.reset_values()
     
-    bis_a3 = fa.bisection(3, 4, true_root=3.568)
+    bis_a3 = fa.bisection(0, 4, true_root=3.568)
     NR_a3 = fa.newton_raphson(fa_derivative, 10, true_root=3.568)
-    secant_a3 = fa.secant(40, 25, true_root=3.568)
-    FP_a3 = fa.false_position(3, 5, true_root=3.568)
-    bis_ea_a3, NR_ea_a3, secant_ea_a3, FP_ea_a3, mod_ea_a3, bis_et_a3, NR_et_a3, secant_et_a3, FP_et_a3, mod_et_a3 = fa.get_errors()
-    bis_count_a3, NR_count_a3, secant_count_a3, FP_count_a3, mod_count_a3 = fa.get_max_iterations()
+    secant_a3 = fa.secant(0, 4, true_root=3.568)
+    FP_a3 = fa.false_position(0, 4, true_root=3.568)
+    mod_a3 = fa.mod_secant(-1, true_root=3.568)
+    a3_ea, a3_et = fa.get_errors()
+    a3_counts = fa.get_max_iterations()
     fa.reset_values()
     fb.reset_values()
 
-    bis_b = fb.bisection(123, 130, true_root=126.632)
-    secant_b = fb.secant(100, 110, true_root=126.632)
-    NR_b = fb.newton_raphson(fb_derivative, 120, true_root=126.632)
-    FP_b = fb.false_position(120, 250, true_root=126.632)
-    bis_ea_b, NR_ea_b, secant_ea_b, FP_ea_b, mod_ea_b, bis_et_b, NR_et_b, secant_et_b, FP_et_b, mod_et_b = fb.get_errors()
-    bis_count_b, NR_count_b, secant_count_b, FP_count_b, mod_count_b = fb.get_max_iterations()
+    bis_b = fb.bisection(120, 130, true_root=126.632)
+    secant_b = fb.secant(120, 130, true_root=126.632)
+    NR_b = fb.newton_raphson(fb_derivative, 100, true_root=126.632)
+    FP_b = fb.false_position(120, 130, true_root=126.632)
+    mod_b = fb.mod_secant(100, true_root=126.632)
+    b_ea, b_et = fb.get_errors()
+    b_counts = fb.get_max_iterations()
 
     print()
-    print(f'Bisections of function (a) {round(bis_a1, 3)}, {round(bis_a2, 3)}, {round(bis_a3, 3)}')
-    print(f'f(bisections): {round(fa.solve(bis_a1), 3)}, {round(fa.solve(bis_a2), 3)}, {round(fa.solve(bis_a3), 3)}')
-    print(f'Bisections of function (a) {round(bis_b, 3)}')
-    print(f'f({bis_b}): {round(fb.solve(bis_b), 3)}')
+    #print(f'Bisections of function (a) {round(bis_a1, 3)}, {round(bis_a2, 3)}, {round(bis_a3, 3)}')
+    #print(f'f(bisections): {round(fa.solve(bis_a1), 3)}, {round(fa.solve(bis_a2), 3)}, {round(fa.solve(bis_a3), 3)}')
+    #print(f'Bisections of function (a) {round(bis_b, 3)}')
+    #print(f'f({bis_b}): {round(fb.solve(bis_b), 3)}')
+    #print()
+    print(f'A1: {a1_ea[2], a1_et[2]}')
+    #print(f'A2: {mod_ea_a2, mod_et_a2}')
+    #print(f'A3: {mod_ea_a3, mod_et_a3}')
+    #print(f'B: {mod_ea_b, mod_et_b}')
+    print(f'FP counts: {a1_counts[2]}')
+
+    return (a1_ea, a1_et, a1_counts, a2_ea, a2_et, a2_counts, a3_ea, a3_et, a3_counts, b_ea, b_et, b_counts)
+
+
+
+def add_lines(eas, counts, fig):
+    line_names = ['Bisection', 'Newton-Raphson', 'Secant', 'False-Position', 'Modified Secant']
+    for i in range(len(eas)):
+        fig.add_trace(go.Scatter(x=np.array(range(1, int(a1_counts[0]+1))), y=np.log(eas[i]),
+                    mode='lines+markers',
+                    name=line_names[i]))
+
+
+if __name__ == "__main__":
+    a1_ea, a1_et, a1_counts, a2_ea, a2_et, a2_counts, a3_ea, a3_et, a3_counts, b_ea, b_et, b_counts = test_code()
+
     print()
-    print(f'A1: {FP_ea_a1, FP_et_a1}')
-    print(f'A2: {FP_ea_a2, FP_et_a2}')
-    print(f'A3: {FP_ea_a3, FP_et_a3}')
-    print(f'B: {FP_ea_b, FP_et_b}')
-    print(f'FP counts: {FP_count_a1, FP_count_a2, FP_count_a3, FP_count_b}')
-    
-    
+    #print(np.array(range(1, int(a1_counts[0]+1))))
+    #print(a1_ea[0])
+    fig  = go.Figure()
+    add_lines(a1_ea, a1_counts, fig)
+    fig.update_layout(title='2x^3 - 11.7x^2 + 17.7x - 5; Root = .365',
+                   xaxis_title='Iterations',
+                   yaxis_title='log(Approximate Error)')
+    fig.show()
+    fig.data = []
+
+    add_lines(a2_ea, a2_counts, fig)
+    fig.update_layout(title='2x^3 - 11.7x^2 + 17.7x - 5; Root = 1.922',
+                   xaxis_title='Iterations',
+                   yaxis_title='log(Approximate Error)')
+    fig.show()
+    fig.data = []
+
+    add_lines(a3_ea, a3_counts, fig)
+    fig.update_layout(title='2x^3 - 11.7x^2 + 17.7x - 5; Root = 3.563',
+                   xaxis_title='Iterations',
+                   yaxis_title='log(Approximate Error)')
+    fig.show()
+    fig.data = []
+
+    add_lines(b_ea, b_counts, fig)
+    fig.update_layout(title='x + 10 - xcodh(50/x); Root = 126.632',
+                   xaxis_title='Iterations',
+                   yaxis_title='log(Approximate Error)')
+    fig.show()
+    fig.data = []
 
 
 input()
