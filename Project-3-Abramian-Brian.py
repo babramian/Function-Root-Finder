@@ -9,12 +9,15 @@ class Equation():
 
     bisec_ea = []
     NR_ea = []
+    secant_ea = []
 
     bisec_et = []
     NR_et = []
+    secant_et = []
 
     bisec_num_iter = None
     NR_num_iter = None
+    secant_num_iter = None
 
     def __init__(self, equation, true_roots):
         self.equation = equation
@@ -26,7 +29,7 @@ class Equation():
     # Bisection Method
     # Input: Starting values A and B, Maximum error value, i is max iterations
     # Returns: Root of the equation between A and B
-    def bisection(self, a, b, err=.01, i=100):
+    def bisection(self, a, b, err=.01, N=100):
         A = float(a)
         B = float(b)
         count = 1
@@ -54,8 +57,8 @@ class Equation():
         self.bisec_ea.append(float(approx_error))
         self.bisec_et.append(float(true_error))
 
-        while approx_error > max_error and count <= i:
-            if count == i:
+        while approx_error > max_error and count <= N:
+            if count == N:
                 print(f"Maximum iterations reached ({count})")
                 break
 
@@ -78,19 +81,19 @@ class Equation():
     
     
 
-    def newton_raphson(self, derivative, x0, err=.01, i=100):
+    def newton_raphson(self, derivative, x0, err=.01, N=100):
         step = 0
         flag = 1
         ea = err + 1
         x1 = None
         
-        while step < i and ea > err:
+        while step < N and ea > err:
             if derivative(x0) == 0.0:
                 print("Can't divide by zero.")
                 break
 
             x1 = x0 - self.solve(x0)/derivative(x0)
-            print(f'Iteration {step+1},\tx0 = {round(x0, 3)}\tx1 = {round(x1, 3)}\tf(x1) = {round(self.solve(x1), 3)}')
+            #print(f'Iteration {step+1},\tx0 = {round(x0, 3)}\tx1 = {round(x1, 3)}\tf(x1) = {round(self.solve(x1), 3)}')
             
             ea = abs((x1 - x0)/x1)
             et = abs((self.true_root - x1)/self.true_root)
@@ -102,31 +105,76 @@ class Equation():
 
         self.NR_num_iter = step
 
-        if step <= i:
-            print(f"Root is: {x1}")
+        if step <= N:
+            print(f"(NR) Root is: {x1}")
             return x1
 
         else:
             print("Not Convergent")
 
+
+    def secant(self, x0, x1, err=0.01, N=100):
+        step = 1
+        ea = err + 1
+        x2 = None
+
+        while step < N and ea > err:
+            if self.solve(x0) == self.solve(x1):
+                print("Mathematical Error")
+                break
+            
+            print(f'Iteration {step},\tx0 = {round(x0, 3)}\tx1 = {round(x1, 3)}\tf(x1) = {round(self.solve(x1), 3)}')
+
+            ea = abs((x1 - x0)/x1)
+            et = abs((self.true_root - x1)/self.true_root)
+            self.secant_ea.append(float(ea))
+            self.secant_et.append(float(et))
+
+            x2 = x1 - (x1 - x0) * self.solve(x1)/(self.solve(x1) - self.solve(x0))
+            x0 = x1
+            x1 = x2
+
+            step += 1
+
+        print(f'Iteration {step},\tx0 = {round(x0, 3)}\tx1 = {round(x1, 3)}\tf(x1) = {round(self.solve(x1), 3)}')
+        ea = abs((x1 - x0)/x1)
+        et = abs((self.true_root - x1)/self.true_root)
+        self.secant_ea.append(float(ea))
+        self.secant_et.append(float(et))
+        self.secant_num_iter = step
+
+        if step <= N:
+            print(f"(Secant) Root is: {x1}")
+            return x1
+
+        else:
+            print("Not Convergent")
+        
     
     def reset_values(self):
         self.bisec_ea = []
         self.NR_ea = []
+        self.secant_ea = []
 
         self.bisec_et = []
         self.NR_et = []
+        self.secant_et = []
 
         self.bisec_num_iter = None
         self.NR_num_iter = None
+        self.secant_num_iter = None
 
 
     def get_errors(self):
-        return np.array(self.bisec_ea, dtype=float), np.array(self.NR_ea, dtype=float), np.array(self.bisec_et, dtype=float), np.array(self.NR_et, dtype=float)
+        return (np.array(self.bisec_ea, dtype=float), np.array(self.NR_ea, dtype=float), 
+                np.array(self.secant_ea, dtype=float), np.array(self.bisec_et, dtype=float), 
+                np.array(self.NR_et, dtype=float), np.array(self.secant_et, dtype=float))
         
     
     def get_max_iterations(self):
-        return np.array([self.bisec_num_iter, self.NR_num_iter], dtype=float)
+        return np.array([self.bisec_num_iter, 
+                            self.NR_num_iter,
+                            self.secant_num_iter], dtype=float)
 
     
 
@@ -143,27 +191,31 @@ if __name__ == "__main__":
 
     bis_a1 = fa.bisection(0, 1)
     NR_a1 = fa.newton_raphson(fa_derivative, -5)
-    bis_ea_a1, NR_ea_a1, bid_et_a1, NR_et_a1 = fa.get_errors()
-    bis_count_a1, NR_count_a1 = fa.get_max_iterations()
+    secant_a1 = fa.secant(-10, -5)
+    bis_ea_a1, NR_ea_a1, secant_ea_a1, bid_et_a1, NR_et_a1, secant_et_a1 = fa.get_errors()
+    bis_count_a1, NR_count_a1, secant_count_a1 = fa.get_max_iterations()
     fa.reset_values()
 
     bis_a2 = fa.bisection(1, 3)
     NR_a2 = fa.newton_raphson(fa_derivative, 2.5)
-    bis_ea_a2, NR_ea_a2, bid_et_a2, NR_et_a2 = fa.get_errors()
-    bis_count_a2, NR_count_a2 = fa.get_max_iterations()
+    secant_a2 = fa.secant(.5, 1.5)
+    bis_ea_a2, NR_ea_a2, secant_ea_a2, bid_et_a2, NR_et_a2, secant_et_a2 = fa.get_errors()
+    bis_count_a2, NR_count_a2, secant_count_a2 = fa.get_max_iterations()
     fa.reset_values()
     
     bis_a3 = fa.bisection(3, 4)
     NR_a3 = fa.newton_raphson(fa_derivative, 10)
-    bis_ea_a3, NR_ea_a3, bid_et_a3, NR_et_a3 = fa.get_errors()
-    bis_count_a3, NR_count_a3 = fa.get_max_iterations()
+    secant_a3 = fa.secant(40, 25)
+    bis_ea_a3, NR_ea_a3, secant_ea_a3, bid_et_a3, NR_et_a3, secant_et_a3 = fa.get_errors()
+    bis_count_a3, NR_count_a3, secant_count_a3 = fa.get_max_iterations()
     fa.reset_values()
     
     fb.reset_values()
     bis_b = fb.bisection(120, 130)
+    secant_b = fb.secant(100, 110)
     NR_b = fb.newton_raphson(fb_derivative, 120)
-    bis_ea_b, NR_ea_b, bid_et_b, NR_et_b = fb.get_errors()
-    bis_count_b, NR_count_b = fb.get_max_iterations()
+    bis_ea_b, NR_ea_b, secant_ea_b, bid_et_b, NR_et_b, secant_et_b = fb.get_errors()
+    bis_count_b, NR_count_b, secant_count_b = fb.get_max_iterations()
 
     print()
     #print(f'Bisections of function (a) {round(bis_a1, 3)}, {round(bis_a2, 3)}, {round(bis_a3, 3)}')
@@ -171,11 +223,11 @@ if __name__ == "__main__":
     #print(f'Bisections of function (a) {round(bis_b, 3)}')
     #print(f'f({bis_b}): {round(fb.solve(bis_b), 3)}')
     #print()
-    print(f'A1: {bis_ea_a1, NR_ea_a1, bid_et_a1, NR_et_a1}')
-    #print(f'A2: {bis_ea_a2, NR_ea_a2, bid_et_a2, NR_et_a2}')
-    #print(f'A3: {bis_ea_a3, NR_ea_a3, bid_et_a3, NR_et_a3}')
-    #print(f'B: {bis_ea_b, NR_ea_b, bid_et_b, NR_et_b}')
-    print(f'B counts: {bis_count_a1, NR_count_a1}')
+    print(f'A1: {secant_ea_a1, secant_et_a1}')
+    print(f'A2: {secant_ea_a2, secant_et_a2}')
+    print(f'A3: {secant_ea_a3, secant_et_a3}')
+    print(f'B: {secant_ea_b, secant_et_b}')
+    print(f'Secant counts: {secant_count_a1, secant_count_a2, secant_count_a3, secant_count_b}')
     
     
 
