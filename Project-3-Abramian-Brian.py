@@ -394,30 +394,46 @@ if __name__ == "__main__":
     #print(a1_ea[0])
     fig  = go.Figure()
     add_lines(a1_ea, a1_counts, fig)
-    fig.update_layout(title='2x^3 - 11.7x^2 + 17.7x - 5; Root = .365',
-                   xaxis_title='Iterations',
-                   yaxis_title='log(Approximate Error)')
+    fig.update_layout(title='<b>2x^3 - 11.7x^2 + 17.7x - 5; Root = .365</b>',
+                    xaxis_title='Iterations',
+                    yaxis_title='log(Approximate Error)',
+                    font_family="Times New Roman",
+                    font_color="black",
+                    font_size=24,
+                    legend_title_font_color="green")
     fig.show()
     fig.data = []
 
     add_lines(a2_ea, a2_counts, fig)
-    fig.update_layout(title='2x^3 - 11.7x^2 + 17.7x - 5; Root = 1.922',
-                   xaxis_title='Iterations',
-                   yaxis_title='log(Approximate Error)')
+    fig.update_layout(title='<b>2x^3 - 11.7x^2 + 17.7x - 5; Root = 1.922</b>',
+                    xaxis_title='Iterations',
+                    yaxis_title='log(Approximate Error)',
+                    font_family="Times New Roman",
+                    font_color="black",
+                    font_size=24,
+                    legend_title_font_color="green")
     fig.show()
     fig.data = []
 
     add_lines(a3_ea, a3_counts, fig)
-    fig.update_layout(title='2x^3 - 11.7x^2 + 17.7x - 5; Root = 3.563',
-                   xaxis_title='Iterations',
-                   yaxis_title='log(Approximate Error)')
+    fig.update_layout(title='<b>2x^3 - 11.7x^2 + 17.7x - 5; Root = 3.563</b>',
+                    xaxis_title='Iterations',
+                    yaxis_title='log(Approximate Error)',
+                    font_family="Times New Roman",
+                    font_color="black",
+                    font_size=24,
+                    legend_title_font_color="green")
     fig.show()
     fig.data = []
 
     add_lines(b_ea, b_counts, fig)
-    fig.update_layout(title='x + 10 - xcodh(50/x); Root = 126.632',
-                   xaxis_title='Iterations',
-                   yaxis_title='log(Approximate Error)')
+    fig.update_layout(title='<b>x + 10 - xcodh(50/x); Root = 126.632</b>',
+                    xaxis_title='Iterations',
+                    yaxis_title='log(Approximate Error)',
+                    font_family="Times New Roman",
+                    font_color="black",
+                    font_size=24,
+                    legend_title_font_color="green")
     fig.show()
     fig.data = []
 
